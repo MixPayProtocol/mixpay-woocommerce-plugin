@@ -28,7 +28,17 @@ function get_settlement_asset_lists()
     return $settlement_asset_lists;
 }
 
+function getRandomString($length = 8)
+{
+    $captcha = '';
+    for($i = 0;$i < $length; $i++){
+        $captcha .= chr(mt_rand(65, 90));
+    }
+    return $captcha;
+}
+
 $settlement_asset_lists = get_settlement_asset_lists();
+$invoice_prefix         = getRandomString();
 
 $this->form_fields = apply_filters( 'wc_offline_form_fields', [
 
@@ -50,6 +60,11 @@ $this->form_fields = apply_filters( 'wc_offline_form_fields', [
         'description' => __('This controls the description which the user sees during checkout.', 'wc-mixpay-gateway'),
         'default'     => __('Expand your payment options with MixPay! BTC, ETH, LTC and many more: pay with anything you like!', 'wc-mixpay-gateway'),
     ],
+    'mixin_id' => [
+        'title'       => __('mixin id ', 'wc-mixpay-gateway'),
+        'type'        => 'text',
+        'description' => __('This controls the mixin id.', 'wc-mixpay-gateway'),
+    ],
     'payee_uuid' => [
         'title'       => __('Payee Uuid ', 'wc-mixpay-gateway'),
         'type'        => 'text',
@@ -65,10 +80,10 @@ $this->form_fields = apply_filters( 'wc_offline_form_fields', [
         'title'       => __( 'Instructions', 'wc-gateway-gateway' ),
         'type'        => 'textarea',
         'description' => __( '', 'wc-gateway-gateway' ),
-        'default'     => '',
+        'default'     => 'Expand your payment options with MixPay! BTC, ETH, LTC and many more: pay with anything you like!',
     ],
-    'domain' => [
-        'title'       => __('Domain', 'wc-mixpay-gateway'),
+    'store_name' => [
+        'title'       => __('Store Name', 'wc-mixpay-gateway'),
         'type'        => 'text',
         'description' => __("(Optional) This option is useful when you have multiple stores, and want to view each store's  payment history in MixPay independently.", 'wc-mixpay-gateway'),
     ],
@@ -76,7 +91,7 @@ $this->form_fields = apply_filters( 'wc_offline_form_fields', [
         'title'       => __('Invoice Prefix', 'wc-mixpay-gateway'),
         'type'        => 'text',
         'description' => __('Please enter a prefix for your invoice numbers. If you use your mixin account for multiple stores ensure this prefix is unique.', 'wc-mixpay-gateway'),
-        'default'     => 'WC-WORDPRESS-',
+        'default'     => $invoice_prefix,
     ],
     'debug' => [
         'title'       => __('Debug', 'wc-mixpay-gateway'),
