@@ -53,7 +53,7 @@ $this->form_fields = apply_filters( 'wc_offline_form_fields', [
     'payee_uuid' => [
         'title'       => __('Payee Uuid ', 'wc-mixpay-gateway'),
         'type'        => 'text',
-        'description' => __('This controls the assets payee uuid.', 'wc-mixpay-gateway'),
+        'description' => __('This controls the assets payee uuid. This is the Mixin ID in UUID format.', 'wc-mixpay-gateway'),
     ],
     'settlement_asset_id' => [
         'title'       => __('Settlement Asset ', 'wc-mixpay-gateway'),
