@@ -70,7 +70,7 @@ $this->form_fields = apply_filters( 'wc_offline_form_fields', [
     'domain' => [
         'title'       => __('Domain', 'wc-mixpay-gateway'),
         'type'        => 'text',
-        'description' => __('Please enter a woocommerce shop domain', 'wc-mixpay-gateway'),
+        'description' => __("(Optional) This option is useful when you have multiple stores, and want to view each store's  payment history in MixPay independently.", 'wc-mixpay-gateway'),
     ],
     'invoice_prefix' => [
         'title'       => __('Invoice Prefix', 'wc-mixpay-gateway'),
