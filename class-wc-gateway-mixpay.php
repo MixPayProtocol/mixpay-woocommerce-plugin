@@ -165,15 +165,15 @@ function wc_mixpay_gateway_init()
             $this->init_settings();
 
             // Define user set variables
-            $this->title               = $this->get_option('title');
-            $this->description         = $this->get_option('description');
-            $this->instructions        = $this->get_option( 'instructions');
-            $this->mixin_id            = $this->get_option('mixin_id');
-            $this->payee_uuid          = $this->get_option('payee_uuid');
+            $this->title                   = $this->get_option('title');
+            $this->description             = $this->get_option('description');
+            $this->instructions            = $this->get_option( 'instructions');
+            $this->mixin_id                = $this->get_option('mixin_id');
+            $this->payee_uuid              = $this->get_option('payee_uuid');
             $this->store_name              = $this->get_option('store_name');
-            $this->settlement_asset_id = $this->get_option('settlement_asset_id');
-            $this->invoice_prefix      = $this->get_option('invoice_prefix', 'WORDPRESS-WC-');
-            $this->debug               = $this->get_option('debug', false);
+            $this->settlement_asset_id     = $this->get_option('settlement_asset_id');
+            $this->invoice_prefix          = $this->get_option('invoice_prefix', 'WORDPRESS-WC-');
+            $this->debug                   = $this->get_option('debug', false);
 
             // Logs
             $this->log = new WC_Logger();
@@ -185,6 +185,7 @@ function wc_mixpay_gateway_init()
             add_action('woocommerce_thankyou_' . $this->id, [ $this, 'thankyou_page' ] );
             add_action('woocommerce_api_wc_gateway_mixpay', [$this, 'mixpay_callback']);
             add_filter('woocommerce_settings_api_sanitized_fields_' . $this->id, [$this, 'set_mixin_uuid'], 1, 1);
+            add_action('woocommerce_after_settings_checkout', [$this, 'reloadPage']);
 
             // Customer Emails
             add_action( 'woocommerce_email_before_order_table', [ $this, 'email_instructions' ], 10, 3 );
@@ -292,12 +293,12 @@ function wc_mixpay_gateway_init()
             $mixpay_args = [
                 'payeeId'           => $this->payee_uuid,
                 'orderId'           => $this->invoice_prefix . $order->get_order_number(),
-                'tagname'           => $this->store_name,
+                'tagname'           => str_replace('.', '', $this->store_name),
                 'settlementAssetId' => $this->settlement_asset_id,
                 'quoteAssetId'      => strtolower($order->get_currency()),
                 'quoteAmount'       => number_format($order->get_total(), 8, '.', ''),
                 'returnTo'          => $this->get_return_url($order),
-                'callbackUrl'       => "https://{$this->store_name}/?wc-api=wc_gateway_mixpay"
+                'callbackUrl'       => site_url() . "/?wc-api=wc_gateway_mixpay"
             ];
 
             if(get_option('woocommerce_manage_stock') === 'yes'){
@@ -473,7 +474,6 @@ function wc_mixpay_gateway_init()
             $mixin_id = $settings['mixin_id'];
 
             if(strpos($mixin_id, '|') !== false){
-                //multisig
                 $receiver_mixin_ids          = explode('|', $mixin_id);
                 $threshold                   = end($receiver_mixin_ids);
                 array_pop($receiver_mixin_ids);
@@ -484,7 +484,7 @@ function wc_mixpay_gateway_init()
                 }
                 $settings['payee_uuid'] = $this->get_multisig_id($receiver_uuids, $threshold);
             }else{
-                $settings['payee_uuid'] = $this->get_mixin_uuid($this->mixin_id);
+                $settings['payee_uuid'] = $this->get_mixin_uuid($mixin_id);
             }
 
             return $settings;
@@ -523,6 +523,13 @@ function wc_mixpay_gateway_init()
                     $key             => $datain,
                 ];
                 wp_remote_post($this->debug, ['body' => $data]);
+            }
+        }
+
+        function reloadPage()
+        {
+            if(! $_SERVER['REQUEST_METHOD'] === 'POST') {
+                wp_redirect($_SERVER['HTTP_REFERER']);
             }
         }
     }
