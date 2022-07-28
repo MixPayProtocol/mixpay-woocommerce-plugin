@@ -179,7 +179,7 @@ function wc_mixpay_gateway_init()
             $this->log = new WC_Logger();
 
             // Actions
-            add_action('woocommerce_after_checkout_billing_form', [$this, 'is_valid_for_use']);
+            add_filter('woocommerce_available_payment_gateways', [$this, 'chenk_is_valid_for_use'], 1, 1);
             add_action('woocommerce_page_wc-settings', [$this, 'is_valid_for_use']);
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
             add_action('woocommerce_thankyou_' . $this->id, [ $this, 'thankyou_page' ] );
@@ -380,6 +380,14 @@ function wc_mixpay_gateway_init()
             return $mixpay_args;
         }
 
+        function chenk_is_valid_for_use($_available_gateways)
+        {
+            if(! $this->is_valid_for_use()){
+                unset($_available_gateways[$this->id]);
+            }
+            return $_available_gateways;
+        }
+
         /**
          * Check if this gateway is enabled and available in the user's country
          *
@@ -392,9 +400,6 @@ function wc_mixpay_gateway_init()
             $currency    = get_woocommerce_currency();
 
             if(! in_array(strtolower($currency), $asset_lists)){
-                $woocommerce_mixpay_gateway_settings            = get_option('woocommerce_mixpay_gateway_settings');
-                $woocommerce_mixpay_gateway_settings['enabled'] = 'no';
-                update_option('woocommerce_mixpay_gateway_settings', $woocommerce_mixpay_gateway_settings);
                 $this->enabled = false;
 
                 return false;
