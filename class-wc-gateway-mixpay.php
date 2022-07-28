@@ -180,7 +180,7 @@ function wc_mixpay_gateway_init()
 
             // Actions
             add_filter('woocommerce_available_payment_gateways', [$this, 'chenk_is_valid_for_use'], 1, 1);
-            add_action('woocommerce_page_wc-settings', [$this, 'is_valid_for_use']);
+            add_action('woocommerce_page_wc-settings', [$this, 'is_valid_for_use'], 1);
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
             add_action('woocommerce_thankyou_' . $this->id, [ $this, 'thankyou_page' ] );
             add_action('woocommerce_api_wc_gateway_mixpay', [$this, 'mixpay_callback']);
@@ -189,6 +189,7 @@ function wc_mixpay_gateway_init()
             // Customer Emails
             add_action( 'woocommerce_email_before_order_table', [ $this, 'email_instructions' ], 10, 3 );
         }
+
 
         /**
          * Initialise Gateway Settings Form Fields
