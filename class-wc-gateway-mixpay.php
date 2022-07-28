@@ -184,8 +184,7 @@ function wc_mixpay_gateway_init()
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
             add_action('woocommerce_thankyou_' . $this->id, [ $this, 'thankyou_page' ] );
             add_action('woocommerce_api_wc_gateway_mixpay', [$this, 'mixpay_callback']);
-            add_filter('woocommerce_settings_api_sanitized_fields_' . $this->id, [$this, 'set_mixin_uuid'], 1, 1);
-            add_action('woocommerce_after_settings_checkout', [$this, 'reloadPage']);
+            add_filter('woocommerce_settings_api_sanitized_fields_' . $this->id, [$this, 'deal_options'], 1, 1);
 
             // Customer Emails
             add_action( 'woocommerce_email_before_order_table', [ $this, 'email_instructions' ], 10, 3 );
@@ -199,7 +198,66 @@ function wc_mixpay_gateway_init()
          */
         function init_form_fields()
         {
-            require_once( 'includes/setting_form_fields.php' );
+            $this->form_fields = apply_filters( 'wc_offline_form_fields', [
+                'enabled' => [
+                    'title'   => __('Enable/Disable', 'wc-mixpay-gateway'),
+                    'type'    => 'checkbox',
+                    'label'   => __('Enable MixPay Payment', 'wc-mixpay-gateway'),
+                    'default' => 'yes',
+                ],
+                'title' => [
+                    'title'       => __('Title', 'wc-mixpay-gateway'),
+                    'type'        => 'text',
+                    'description' => __('This controls the title which the user sees during checkout.', 'wc-mixpaypayment-gateway'),
+                    'default'     => __('MixPay Payment', 'wc-mixpay-gateway'),
+                ],
+                'description' => [
+                    'title'       => __('Description', 'wc-mixpay-gateway'),
+                    'type'        => 'textarea',
+                    'description' => __('This controls the description which the user sees during checkout.', 'wc-mixpay-gateway'),
+                    'default'     => __('Expand your payment options with MixPay! BTC, ETH, LTC and many more: pay with anything you like!', 'wc-mixpay-gateway'),
+                ],
+                'mixin_id' => [
+                    'title'       => __('mixin id ', 'wc-mixpay-gateway'),
+                    'type'        => 'text',
+                    'description' => __('This controls the mixin id.', 'wc-mixpay-gateway'),
+                ],
+                'payee_uuid' => [
+                    'title'             => __('Payee Uuid ', 'wc-mixpay-gateway'),
+                    'type'              => 'text',
+                    'description'       => __('This controls the assets payee uuid.', 'wc-mixpay-gateway'),
+                    'custom_attributes' => ['readonly' => true]
+                ],
+                'settlement_asset_id' => [
+                    'title'       => __('Settlement Asset ', 'wc-mixpay-gateway'),
+                    'type'        => 'select',
+                    'description' => __('This controls the assets received by the merchant.', 'wc-mixpay-gateway'),
+                    "options"     => $this->get_settlement_asset_lists(),
+                ],
+                'instructions' => [
+                    'title'       => __( 'Instructions', 'wc-gateway-gateway' ),
+                    'type'        => 'textarea',
+                    'description' => __( '', 'wc-gateway-gateway' ),
+                    'default'     => 'Expand your payment options with MixPay! BTC, ETH, LTC and many more: pay with anything you like!',
+                ],
+                'store_name' => [
+                    'title'       => __('Store Name', 'wc-mixpay-gateway'),
+                    'type'        => 'text',
+                    'description' => __("(Optional) This option is useful when you have multiple stores, and want to view each store's  payment history in MixPay independently.", 'wc-mixpay-gateway'),
+                ],
+                'invoice_prefix' => [
+                    'title'             => __('Invoice Prefix', 'wc-mixpay-gateway'),
+                    'type'              => 'text',
+                    'description'       => __('Please enter a prefix for your invoice numbers. If you use your mixin account for multiple stores ensure this prefix is unique.', 'wc-mixpay-gateway'),
+                    'default'           => $this->getRandomString(),
+                    'custom_attributes' => ['readonly' => true]
+                ],
+                'debug' => [
+                    'title'       => __('Debug', 'wc-mixpay-gateway'),
+                    'type'        => 'text',
+                    'description' => __('(this will Slow down website performance) Send post data to debug', 'wc-mixpay-gateway'),
+                ]
+            ] );
         }
 
         /**
@@ -293,7 +351,7 @@ function wc_mixpay_gateway_init()
             $mixpay_args = [
                 'payeeId'           => $this->payee_uuid,
                 'orderId'           => $this->invoice_prefix . $order->get_order_number(),
-                'tagname'           => str_replace('.', '', $this->store_name),
+                'tagname'           => $this->store_name,
                 'settlementAssetId' => $this->settlement_asset_id,
                 'quoteAssetId'      => strtolower($order->get_currency()),
                 'quoteAmount'       => number_format($order->get_total(), 8, '.', ''),
@@ -469,22 +527,90 @@ function wc_mixpay_gateway_init()
             return $quote_asset_lists;
         }
 
-        function set_mixin_uuid($settings)
+        function get_settlement_asset_lists()
         {
-            $mixin_id = $settings['mixin_id'];
+            $key                    = 'mixpay_settlement_asset_lists';
+            $settlement_asset_lists = get_option($key);
 
-            if(strpos($mixin_id, '|') !== false){
-                $receiver_mixin_ids          = explode('|', $mixin_id);
-                $threshold                   = end($receiver_mixin_ids);
-                array_pop($receiver_mixin_ids);
-                $receiver_uuids = [];
+            if(isset($settlement_asset_lists['expire_time']) && $settlement_asset_lists['expire_time'] > time()){
+                return $settlement_asset_lists['data'];
+            }
 
-                foreach($receiver_mixin_ids as $mixin_id){
-                    $receiver_uuids[] = $this->get_mixin_uuid($mixin_id);
+            $response      = wp_remote_get(MIXPAY_SETTLEMENT_ASSETS_API);
+            $response_data = wp_remote_retrieve_body($response);
+            $response_data = json_decode($response_data, true)['data'] ?? [];
+
+            $lists = [];
+
+            foreach ($response_data as $asset) {
+                $lists[$asset['assetId']] = $asset['symbol'] . ' - ' . $asset['network'];
+            }
+
+            if(! empty($lists)) {
+                $settlement_asset_lists = $lists;
+                update_option($key, ['data' => $lists, 'expire_time' => time() + MIXPAY_ASSETS_EXPIRE_SECONDS]);
+            }
+
+            return $settlement_asset_lists;
+        }
+
+        function getRandomString($length = 8)
+        {
+            $captcha = '';
+
+            for($i = 0;$i < $length; $i++){
+                $captcha .= chr(mt_rand(65, 90));
+            }
+
+            return $captcha;
+        }
+
+        function deal_options($settings)
+        {
+            if(empty($settings['title'])){
+                WC_Admin_Settings::add_error("Title is required");
+            }
+
+            if(empty($settings['mixin_id'])){
+                WC_Admin_Settings::add_error("Mixin Id is required");
+            }
+
+            if(empty($settings['settlement_asset_id'])){
+                WC_Admin_Settings::add_error("Settlement asset is required");
+            }
+
+            if(empty($settings['invoice_prefix'])){
+                WC_Admin_Settings::add_error("Invoice Prefix is required");
+            }
+
+            if(! empty($settings['store_name']) && ! preg_match('/^[a-zA-Z0-9]+$/u', $settings['store_name'])){
+                WC_Admin_Settings::add_error("Store Name must only contain letters and numbers");
+            }
+
+            $mixin_id = $settings['mixin_id'] ?? '';
+
+            if($mixin_id) {
+                if (strpos($mixin_id, '|') !== false) {
+                    $receiver_mixin_ids = explode('|', $mixin_id);
+                    $threshold          = end($receiver_mixin_ids);
+                    array_pop($receiver_mixin_ids);
+                    $receiver_uuids = [];
+
+                    if(count($receiver_mixin_ids) < $threshold){
+                        WC_Admin_Settings::add_error("Multisig threshold not more than the count of receivers");
+                    }
+
+                    foreach ($receiver_mixin_ids as $mixin_id) {
+                        $receiver_uuids[] = $this->get_mixin_uuid($mixin_id);
+                    }
+                    $settings['payee_uuid'] = $this->get_multisig_id($receiver_uuids, $threshold);
+                } else {
+                    $settings['payee_uuid'] = $this->get_mixin_uuid($mixin_id);
                 }
-                $settings['payee_uuid'] = $this->get_multisig_id($receiver_uuids, $threshold);
-            }else{
-                $settings['payee_uuid'] = $this->get_mixin_uuid($mixin_id);
+            }
+
+            if(empty($settings['payee_uuid'])){
+                WC_Admin_Settings::add_error("Payee uuid was not obtained, please try again later");
             }
 
             return $settings;
@@ -495,6 +621,10 @@ function wc_mixpay_gateway_init()
             $response               = wp_remote_get(MIXPAY_MIXINUUID_API . "/{$mixin_id}");
             $response_data          = wp_remote_retrieve_body($response);
             $response_data          = json_decode($response_data, true)['data'] ?? [];
+
+            if(empty($response_data['payeeId'])){
+                WC_Admin_Settings::add_error("Mixin uuid was not obtained, please try again later");
+            }
 
             return $response_data['payeeId'] ?? '';
         }
@@ -523,13 +653,6 @@ function wc_mixpay_gateway_init()
                     $key             => $datain,
                 ];
                 wp_remote_post($this->debug, ['body' => $data]);
-            }
-        }
-
-        function reloadPage()
-        {
-            if(! $_SERVER['REQUEST_METHOD'] === 'POST') {
-                wp_redirect($_SERVER['HTTP_REFERER']);
             }
         }
     }
