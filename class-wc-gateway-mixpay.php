@@ -220,7 +220,7 @@ function wc_mixpay_gateway_init()
                 'mixin_id' => [
                     'title'       => __('mixin id ', 'wc-mixpay-gateway'),
                     'type'        => 'text',
-                    'description' => __('This controls the mixin id.', 'wc-mixpay-gateway'),
+                    'description' => __('This controls the mixin id or multisig group (minxinid_1|minxinid_2|minxinid_3|threshold)', 'wc-mixpay-gateway'),
                 ],
                 'payee_uuid' => [
                     'title'             => __('Payee Uuid ', 'wc-mixpay-gateway'),
@@ -419,7 +419,7 @@ function wc_mixpay_gateway_init()
         {
             ?>
             <h3><?php _e('MixPay Payment', 'woocommerce'); ?></h3>
-            <p><?php _e('Completes checkout via MixPay Payment. If you encounter any problem, please <a href="https://mixpay.me/developers/guides/contact-customer-service" target="_blank">contact our customer service</a>.', 'woocommerce'); ?></p>
+            <p><?php _e('Completes checkout via MixPay Payment', 'woocommerce'); ?></p>
 
             <?php if ($this->enabled) { ?>
 
