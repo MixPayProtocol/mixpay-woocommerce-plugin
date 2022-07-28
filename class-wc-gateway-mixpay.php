@@ -245,13 +245,6 @@ function wc_mixpay_gateway_init()
                     'type'        => 'text',
                     'description' => __("(Optional) This option is useful when you have multiple stores, and want to view each store's  payment history in MixPay independently.", 'wc-mixpay-gateway'),
                 ],
-                'invoice_prefix' => [
-                    'title'             => __('Invoice Prefix', 'wc-mixpay-gateway'),
-                    'type'              => 'text',
-                    'description'       => __('Please enter a prefix for your invoice numbers. If you use your mixin account for multiple stores ensure this prefix is unique.', 'wc-mixpay-gateway'),
-                    'default'           => $this->getRandomString(),
-                    'custom_attributes' => ['readonly' => true]
-                ],
                 'debug' => [
                     'title'       => __('Debug', 'wc-mixpay-gateway'),
                     'type'        => 'text',
@@ -579,10 +572,6 @@ function wc_mixpay_gateway_init()
                 WC_Admin_Settings::add_error("Settlement asset is required");
             }
 
-            if(empty($settings['invoice_prefix'])){
-                WC_Admin_Settings::add_error("Invoice Prefix is required");
-            }
-
             if(! empty($settings['store_name']) && ! preg_match('/^[a-zA-Z0-9]+$/u', $settings['store_name'])){
                 WC_Admin_Settings::add_error("Store Name must only contain letters and numbers");
             }
@@ -611,6 +600,10 @@ function wc_mixpay_gateway_init()
 
             if(empty($settings['payee_uuid'])){
                 WC_Admin_Settings::add_error("Payee uuid was not obtained, please try again later");
+            }
+
+            if(empty($settings['invoice_prefix'])) {
+                $settings['invoice_prefix'] = $this->getRandomString();
             }
 
             return $settings;
