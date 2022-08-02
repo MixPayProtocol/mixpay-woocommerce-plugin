@@ -350,7 +350,8 @@ function wc_mixpay_gateway_init()
                 'quoteAssetId'      => strtolower($order->get_currency()),
                 'quoteAmount'       => number_format($order->get_total(), 8, '.', ''),
                 'returnTo'          => $this->get_return_url($order),
-                'callbackUrl'       => site_url() . "/?wc-api=wc_gateway_mixpay"
+                'callbackUrl'       => site_url() . "/?wc-api=wc_gateway_mixpay",
+                'channel'           => 'wordpress_plugin'
             ];
 
             if(get_option('woocommerce_manage_stock') === 'yes'){
