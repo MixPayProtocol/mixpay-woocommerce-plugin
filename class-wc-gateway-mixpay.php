@@ -552,7 +552,7 @@ function wc_mixpay_gateway_init()
 
             foreach ($response_data as $asset) {
                 $item_asset_id         = esc_attr($asset['assetId']);
-                $lists[$item_asset_id] = esc_html($asset['symbol'] . ' - ' . $asset['network']);
+                $lists[$item_asset_id] = empty($asset['network']) ? esc_html($asset['symbol']) : esc_html($asset['symbol'] . ' - ' . $asset['network']);
             }
 
             if(! empty($lists)) {
