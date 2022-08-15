@@ -164,7 +164,7 @@ function wc_mixpay_gateway_init()
         {
             global $woocommerce;
             $this->id                 = 'mixpay_gateway';
-            $this->icon               = apply_filters('woocommerce_mixpay_icon', esc_url(MIXPAY_ICON_URL));
+            $this->icon               = apply_filters('woocommerce_mixpay_icon', MIXPAY_ICON_URL);
             $this->has_fields         = false;
             $this->method_title       = esc_html(__('MixPay Payment', 'wc-gateway-mixpay'));
             $this->method_description = esc_html(__( 'Allows Cryptocurrency payments via MixPay', 'wc-mixpay-gateway' ));
