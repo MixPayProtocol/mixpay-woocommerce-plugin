@@ -10,7 +10,8 @@ Stable tag:              1.0.0
 License:                 GPLv2 or later
 
 ## Description
-MixPay Payment is a service that allows users to [accept online crypto payments](https://github.com/MixPayHQ/mixpay-woocommerce-plugin) with numerous supported cryptocurrencies. The service is non-custodial with low transaction fees and extremely simple integration. The crypto payment gateway can be added easily to websites, social media accounts, and the largest e-commerce platforms by using cryptocurrency payment plugins.
+
+[MixPay Payment](https://mixpay.me/) is a service that allows users to [accept online crypto payments](https://github.com/MixPayHQ/mixpay-woocommerce-plugin) with numerous supported cryptocurrencies. The service is non-custodial with low transaction fees and extremely simple integration. The crypto payment gateway can be added easily to websites, social media accounts, and the largest e-commerce platforms by using cryptocurrency payment plugins.
 
 MixPay Payment has created a plugin for all major e-commerce including WooCommerce The plugin enables users to pay for items in your online store using any cryptocurrencies. Installing the plugin created a new payment method in your store. We provide a simple step-by-step guide on installing the plugin and setting up your MixPay Payment to start accepting crypto payments. Don’t worry if you want to accept Bitcoin as payment, but your customer wants to use Ether: we will use the auto-conversion provided by MixPay and everyone will use their favorite coin!
 
@@ -20,6 +21,8 @@ MixPay Payment  does the heavy lifting, and all you need to do is register an [M
 
 The easiest way to accept online payments in a wide variety of cryptocurrencies.
 
+
+More info at https://mixpay.me/developers/guides/woocommerce-plugin
 
 ## Security & Privacy
 The details you provide during the account creation are confidential and securely encrypted. The details sent to the Placeholder Platform only include your ID, order ID, the amount involved, and the cryptocurrency used for the transaction. Customers never leave the page of your online store. We take privacy seriously, and we never share your account or transaction details with anyone.
