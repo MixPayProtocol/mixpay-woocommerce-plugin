@@ -15,7 +15,7 @@ MixPay Payment is a service that allows users to with numerous supported cryptoc
 
 == Description ==
 
-MixPay Payment is a service that allows users to [accept online crypto payments](https://github.com/MixPayHQ/mixpay-woocommerce-plugin) with numerous supported cryptocurrencies. The service is non-custodial with low transaction fees and extremely simple integration. The crypto payment gateway can be added easily to websites, social media accounts, and the largest e-commerce platforms by using cryptocurrency payment plugins.
+[MixPay Payment](https://mixpay.me/) is a service that allows users to [accept online crypto payments](https://github.com/MixPayHQ/mixpay-woocommerce-plugin) with numerous supported cryptocurrencies. The service is non-custodial with low transaction fees and extremely simple integration. The crypto payment gateway can be added easily to websites, social media accounts, and the largest e-commerce platforms by using cryptocurrency payment plugins.
 
 MixPay Payment has created a plugin for all major e-commerce including WooCommerce The plugin enables users to pay for items in your online store using any cryptocurrencies. Installing the plugin created a new payment method in your store. We provide a simple step-by-step guide on installing the plugin and setting up your MixPay Payment to start accepting crypto payments. Don’t worry if you want to accept Bitcoin as payment, but your customer wants to use Ether: we will use the auto-conversion provided by MixPay and everyone will use their favorite coin!
 
