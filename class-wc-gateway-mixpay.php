@@ -5,7 +5,7 @@
  * Plugin Name:             MixPay Gateway for WooCommerce
  * Plugin URI:              https://github.com/MixPayHQ/mixpay-woocommerce-plugin
  * Description:             Cryptocurrency Payment Gateway.
- * Version:                 1.0.0
+ * Version:                 1.0.1
  * Author:                  MixPay Payment
  * License:                 GPLv2 or later
  * License URI:             http://www.gnu.org/licenses/gpl-2.0.html
@@ -35,7 +35,7 @@ if (! defined('MIXPAY_FOR_WOOCOMMERCE_ASSET_URL')) {
 }
 
 if (! defined('MIXPAY_VERSION_PFW')) {
-    define('MIXPAY_VERSION_PFW', '1.0.0');
+    define('MIXPAY_VERSION_PFW', '1.0.1');
 }
 
 if (! defined('MIXPAY_SUPPORT_EMAIL')) {
@@ -227,9 +227,9 @@ function wc_mixpay_gateway_init()
                     'default'     => esc_html(__('Expand your payment options with MixPay! BTC, ETH, LTC and many more: pay with anything you like!', 'wc-mixpay-gateway')),
                 ],
                 'mixin_id' => [
-                    'title'       => esc_html(__('mixin id ', 'wc-mixpay-gateway')),
+                    'title'       => esc_html(__('Mixin Id ', 'wc-mixpay-gateway')),
                     'type'        => 'text',
-                    'description' => esc_html(__('This controls the mixin id or multisig group (minxinid_1|minxinid_2|minxinid_3|threshold)', 'wc-mixpay-gateway')),
+                    'description' => __('(<strong style="color: red">Before setting the Mixin Id, the MixPay robot 7000104220 must be added to the Mixin wallet as a contact</strong>) This controls the mixin id or multisig group (minxinid_1|minxinid_2|minxinid_3|threshold)', 'wc-mixpay-gateway'),
                 ],
                 'payee_uuid' => [
                     'title'             => esc_html(__('Payee Uuid ', 'wc-mixpay-gateway')),
@@ -246,8 +246,8 @@ function wc_mixpay_gateway_init()
                 'instructions' => [
                     'title'       => esc_html(__( 'Instructions', 'wc-gateway-gateway' )),
                     'type'        => 'textarea',
-                    'description' => esc_html(__( '', 'wc-gateway-gateway' )),
-                    'default'     => esc_html('Expand your payment options with MixPay! BTC, ETH, LTC and many more: pay with anything you like!'),
+                    'description' => esc_html(__( 'The contents of this option are displayed on order received page and order email', 'wc-gateway-gateway' )),
+                    'default'     => esc_html('Thanks for your using MixPay Payment !'),
                 ],
                 'store_name' => [
                     'title'       => esc_html(__('Store Name', 'wc-mixpay-gateway')),
@@ -267,7 +267,7 @@ function wc_mixpay_gateway_init()
          */
         public function thankyou_page() {
             if ( $this->instructions ) {
-                echo esc_html(wpautop( wptexturize( $this->instructions ) ));
+                echo wpautop( wptexturize( $this->instructions ) );
             }
         }
 
@@ -280,8 +280,8 @@ function wc_mixpay_gateway_init()
          * @param bool $plain_text
          */
         public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
-            if ( $this->instructions && ! $sent_to_admin && $this->id === $order->get_payment_method() && $order->has_status( 'on-hold' ) ) {
-                echo esc_html(wpautop(wptexturize($this->instructions)));
+            if ( $this->instructions && $this->id === $order->get_payment_method() ) {
+                echo wpautop(wptexturize($this->instructions));
             }
         }
 
@@ -612,10 +612,12 @@ function wc_mixpay_gateway_init()
                 } else {
                     $settings['payee_uuid'] = esc_html($this->get_mixin_uuid($mixin_id));
                 }
+            }else{
+                $settings['payee_uuid'] = '';
             }
 
             if(empty($settings['payee_uuid'])){
-                WC_Admin_Settings::add_error(esc_html("Payee uuid was not obtained, please try again later"));
+                WC_Admin_Settings::add_error(esc_html("Payee uuid was not obtained, please try again later. (Make sure you have added MixPay robot 7000104220 as a contact in your Mixin wallet)"));
             }
 
             if(empty($settings['invoice_prefix'])) {
