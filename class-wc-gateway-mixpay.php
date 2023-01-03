@@ -483,8 +483,20 @@ function wc_mixpay_gateway_init()
             if($payments_result_data["status"] == "pending" && $status_before_update == 'pending') {
                 $order->update_status('processing', 'Order is processing.');
             } elseif($payments_result_data["status"] == "success" && in_array($status_before_update, ['pending', 'processing'])) {
-                $order->update_status('completed', 'Order has been paid.');
-                $result = ['code' => 'SUCCESS', 'status' => 200];
+                
+                $order_quote_amount = number_format($order->get_total(), 8, '.', '');
+                $order_quote_assetid = strtolower($order->get_currency());
+                
+                if (
+                    $payments_result_data["payeeId"] == $this->payee_uuid && 
+                    $payments_result_data["quoteAssetId"] == $order_quote_assetid && 
+                    $payments_result_data["quoteAmount"] == $order_quote_amount
+                    )
+                {
+                    $order->update_status('completed', 'Order has been paid.');
+                    $result = ['code' => 'SUCCESS', 'status' => 200];
+                }
+
             } elseif($payments_result_data["status"] == "failed") {
                 $order->update_status('cancelled', "Order has been cancelled, reason: {$payments_result_data['failureReason']}.");
             }
