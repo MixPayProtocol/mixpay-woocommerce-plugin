@@ -7,7 +7,7 @@ Tested up to:            6.0
 Requires PHP:            7.1+
 WC requires at least:    4.9.4
 WC tested up to:         6.6.1
-Stable tag:              1.0.1
+Stable tag:              1.0.2
 License:                 GPLv2 or later
 License URI:             http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,29 @@ Customers will be thrilled to have a place to spend their hard-mined coins, espe
 MixPay Payment  does the heavy lifting, and all you need to do is register an [Mixin](https://mixin.one) account and install the plugin. Let us do the rest and power your store with crypto payments!
 
 The easiest way to accept online payments in a wide variety of cryptocurrencies.
+
+**Documents**
+
+* For users: https://help.mixpay.me
+* For developers: https://mixpay.me/developers
+
+**Social**
+
+* Official: https://mixpay.me
+* Blog: https://mixpay.me/blog
+* Linktree: https://linktr.ee/mixpay
+* Twitter: https://twitter.com/MixPayProtocol
+* Facebook: https://www.facebook.com/mixpayprotocol
+* VK: https://vk.com/mixpayprotocol
+* Discord: https://discord.gg/AtJr6ycfEy
+* Instagram: https://www.instagram.com/mixpayprotocol
+* TikTok: https://www.tiktok.com/@mixpayprotocol
+* LinkedIn: https://www.linkedin.com/company/mixpay
+* YouTube: https://www.youtube.com/@mixpayprotocol
+* Medium: https://medium.com/mixpayblog
+* Mirror: https://mirror.xyz/mixpayme.eth
+* GitHub: https://github.com/MixPayProtocol
+* Email: bd@mixpay.me
 
 == Installation ==
 
