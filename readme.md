@@ -6,7 +6,7 @@ Tested up to:            6.0
 Requires PHP:            7.1+
 WC requires at least:    4.9.4  
 WC tested up to:         6.6.1  
-Stable tag:              1.0.2
+Stable tag:              1.0.3
 License:                 GPLv2 or later
 
 ## Description
@@ -94,3 +94,7 @@ If you run into any problems, or if you simply wish to discuss something with ou
 ## Changelog
 ### 1.0.0 
 * Initial commit
+### 1.0.2 
+* Security upgrade
+### 1.0.3
+* Use short Link to Payment

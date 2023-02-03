@@ -5,7 +5,7 @@
  * Plugin Name:             MixPay Gateway for WooCommerce
  * Plugin URI:              https://github.com/MixPayHQ/mixpay-woocommerce-plugin
  * Description:             Cryptocurrency Payment Gateway.
- * Version:                 1.0.1
+ * Version:                 1.0.3
  * Author:                  MixPay Payment
  * License:                 GPLv2 or later
  * License URI:             http://www.gnu.org/licenses/gpl-2.0.html
@@ -35,7 +35,7 @@ if (! defined('MIXPAY_FOR_WOOCOMMERCE_ASSET_URL')) {
 }
 
 if (! defined('MIXPAY_VERSION_PFW')) {
-    define('MIXPAY_VERSION_PFW', '1.0.1');
+    define('MIXPAY_VERSION_PFW', '1.0.3');
 }
 
 if (! defined('MIXPAY_SUPPORT_EMAIL')) {
@@ -48,6 +48,10 @@ if (! defined('MIXPAY_ICON_URL')) {
 
 if (! defined('MIXPAY_PAY_LINK')) {
     define('MIXPAY_PAY_LINK', 'https://mixpay.me/pay');
+}
+
+if (! defined('MIXPAY_CODE_LINK')) {
+    define('MIXPAY_CODE_LINK', 'https://mixpay.me/code');
 }
 
 if (! defined('MIXPAY_API_URL')) {
@@ -76,6 +80,10 @@ if (! defined('MIXPAY_ASSETS_EXPIRE_SECONDS')) {
 
 if (! defined('MIXPAY_PAYMENTS_RESULT')) {
     define('MIXPAY_PAYMENTS_RESULT', MIXPAY_API_URL . '/payments_result');
+}
+
+if (! defined('MIXPAY_ONE_TIME_PAYMENT')) {
+    define('MIXPAY_ONE_TIME_PAYMENT', MIXPAY_API_URL . '/one_time_payment');
 }
 
 /**
@@ -136,11 +144,11 @@ add_filter( 'cron_schedules', 'add_cron_every_minute_interval' );
 /**
  * MixPay Payment Gateway
  *
- * @class 		WC_Gateway_mixpay
- * @extends		WC_Payment_Gateway
- * @version		1.0.0
- * @package		WooCommerce/Classes/Payment
- * @author 		Echo
+ * @class       WC_Gateway_mixpay
+ * @extends     WC_Payment_Gateway
+ * @version     1.0.0
+ * @package     WooCommerce/Classes/Payment
+ * @author      Echo
  */
 add_action('plugins_loaded', 'wc_mixpay_gateway_init', 11);
 function wc_mixpay_gateway_init()
@@ -335,7 +343,14 @@ function wc_mixpay_gateway_init()
             }
 
             $mixpay_args = $this->get_mixpay_args($order);
-            $mixpay_adr  = MIXPAY_PAY_LINK . '?' . http_build_query($mixpay_args);
+
+            $code = esc_html($this->post_payment_code($mixpay_args));
+
+            if (empty($code)) {
+                throw new Exception("Server error, please try again.");
+            }
+
+            $mixpay_adr  = MIXPAY_CODE_LINK . '/' . $code;
 
             return $mixpay_adr;
         }
@@ -359,7 +374,7 @@ function wc_mixpay_gateway_init()
                 'quoteAmount'       => number_format($order->get_total(), 8, '.', ''),
                 'returnTo'          => $this->get_return_url($order),
                 'callbackUrl'       => site_url() . "/?wc-api=wc_gateway_mixpay",
-                'channel'           => 'wordpress_plugin'
+                'isTemp'            => true,
             ];
 
             if(get_option('woocommerce_manage_stock') === 'yes'){
@@ -664,6 +679,22 @@ function wc_mixpay_gateway_init()
             $response_data          = json_decode($response_data, true)['data'] ?? [];
 
             return $response_data['multisigId'] ?? '';
+        }
+
+        function post_payment_code($payments_data)
+        {
+            $response = wp_remote_post( MIXPAY_ONE_TIME_PAYMENT, [
+                'body' => $payments_data
+            ]);
+
+            $response_data = wp_remote_retrieve_body($response);
+            $result = json_decode($response_data, true);
+
+            if ($result['success']) {
+                return $result['data']['code'];
+            }
+
+            return null;
         }
 
         function debug_post_out($key, $datain)
