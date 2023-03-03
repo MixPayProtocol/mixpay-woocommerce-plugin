@@ -5,7 +5,7 @@
  * Plugin Name:             MixPay Gateway for WooCommerce
  * Plugin URI:              https://github.com/MixPayHQ/mixpay-woocommerce-plugin
  * Description:             Cryptocurrency Payment Gateway.
- * Version:                 1.0.3
+ * Version:                 1.0.4
  * Author:                  MixPay Payment
  * License:                 GPLv2 or later
  * License URI:             http://www.gnu.org/licenses/gpl-2.0.html
@@ -35,7 +35,7 @@ if (! defined('MIXPAY_FOR_WOOCOMMERCE_ASSET_URL')) {
 }
 
 if (! defined('MIXPAY_VERSION_PFW')) {
-    define('MIXPAY_VERSION_PFW', '1.0.3');
+    define('MIXPAY_VERSION_PFW', '1.0.4');
 }
 
 if (! defined('MIXPAY_SUPPORT_EMAIL')) {
@@ -184,7 +184,7 @@ function wc_mixpay_gateway_init()
             // Define user set variables
             $this->title                   = $this->get_option('title');
             $this->description             = $this->get_option('description');
-            $this->instructions            = $this->get_option( 'instructions');
+            $this->instructions            = $this->get_option('instructions');
             $this->mixin_id                = $this->get_option('mixin_id');
             $this->payee_uuid              = $this->get_option('payee_uuid');
             $this->store_name              = $this->get_option('store_name');
@@ -365,6 +365,7 @@ function wc_mixpay_gateway_init()
         function get_mixpay_args($order)
         {
             global $woocommerce;
+
             $mixpay_args = [
                 'payeeId'           => $this->payee_uuid,
                 'orderId'           => $this->invoice_prefix . $order->get_order_number(),
@@ -375,30 +376,8 @@ function wc_mixpay_gateway_init()
                 'returnTo'          => $this->get_return_url($order),
                 'callbackUrl'       => site_url() . "/?wc-api=wc_gateway_mixpay",
                 'isTemp'            => true,
+                'cancelUrl'         => $order->get_cancel_order_url_raw(),
             ];
-
-            if(get_option('woocommerce_manage_stock') === 'yes'){
-                $woocommerce_hold_stock_minutes  = get_option('woocommerce_hold_stock_minutes') ?: 1;
-                $woocommerce_hold_stock_minutes  = $woocommerce_hold_stock_minutes > 240 ? 240 : $woocommerce_hold_stock_minutes;
-                $created_time                    = strtotime($order->get_date_created());
-                $mixpay_args['expiredTimestamp'] = $created_time + $woocommerce_hold_stock_minutes * 60 - 30;
-
-                $expiry_message = sprintf(
-                    __( 'Sorry, your session has expired. <a href="%s" class="wc-backward">Return to shop</a>', 'woocommerce' ),
-                    esc_url( wc_get_page_permalink( 'shop' ) )
-                );
-
-                if(! $order->has_status('pending')){
-                    throw new Exception($expiry_message);
-                }
-
-                if($mixpay_args['expiredTimestamp'] <= time()){
-                    if($order->has_status('pending')) {
-                        $order->update_status('cancelled', 'Unpaid order cancelled - time limit reached');
-                    }
-                    throw new Exception($expiry_message);
-                }
-            }
 
             $mixpay_args = apply_filters('woocommerce_mixpay_args', $mixpay_args);
 
@@ -513,6 +492,8 @@ function wc_mixpay_gateway_init()
 
             } elseif($payments_result_data["status"] == "failed") {
                 $order->update_status('cancelled', "Order has been cancelled, reason: {$payments_result_data['failureReason']}.");
+            } elseif($status_before_update == 'cancelled' && $payments_result_data["status"] == "success") {
+                $order->update_status('processing', 'Order is processing.');
             }
 
             if (! $order->has_status(['pending', 'processing'])){
