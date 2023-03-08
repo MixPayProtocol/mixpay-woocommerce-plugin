@@ -6,7 +6,7 @@ Tested up to:            6.0
 Requires PHP:            7.1+
 WC requires at least:    4.9.4  
 WC tested up to:         6.6.1  
-Stable tag:              1.0.5
+Stable tag:              1.0.6
 License:                 GPLv2 or later
 
 ## Description
@@ -102,3 +102,5 @@ If you run into any problems, or if you simply wish to discuss something with ou
 * Remove expiredTimestamp
 ### 1.0.5
 * Change Icon & Remove currency check
+### 1.0.6
+* Change images catalogue

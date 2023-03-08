@@ -5,7 +5,7 @@
  * Plugin Name:             MixPay Gateway for WooCommerce
  * Plugin URI:              https://github.com/MixPayHQ/mixpay-woocommerce-plugin
  * Description:             Cryptocurrency Payment Gateway.
- * Version:                 1.0.5
+ * Version:                 1.0.6
  * Author:                  MixPay Payment
  * License:                 GPLv2 or later
  * License URI:             http://www.gnu.org/licenses/gpl-2.0.html
@@ -35,7 +35,7 @@ if (! defined('MIXPAY_FOR_WOOCOMMERCE_ASSET_URL')) {
 }
 
 if (! defined('MIXPAY_VERSION_PFW')) {
-    define('MIXPAY_VERSION_PFW', '1.0.5');
+    define('MIXPAY_VERSION_PFW', '1.0.6');
 }
 
 if (! defined('MIXPAY_SUPPORT_EMAIL')) {
