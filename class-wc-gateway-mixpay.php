@@ -5,7 +5,7 @@
  * Plugin Name:             MixPay Gateway for WooCommerce
  * Plugin URI:              https://github.com/MixPayHQ/mixpay-woocommerce-plugin
  * Description:             Cryptocurrency Payment Gateway.
- * Version:                 1.0.6
+ * Version:                 1.0.8
  * Author:                  MixPay Payment
  * License:                 GPLv2 or later
  * License URI:             http://www.gnu.org/licenses/gpl-2.0.html
@@ -35,7 +35,7 @@ if (! defined('MIXPAY_FOR_WOOCOMMERCE_ASSET_URL')) {
 }
 
 if (! defined('MIXPAY_VERSION_PFW')) {
-    define('MIXPAY_VERSION_PFW', '1.0.6');
+    define('MIXPAY_VERSION_PFW', '1.0.8');
 }
 
 if (! defined('MIXPAY_SUPPORT_EMAIL')) {
@@ -473,7 +473,11 @@ function wc_mixpay_gateway_init()
             } elseif($payments_result_data["status"] == "failed") {
                 $order->update_status('cancelled', "Order has been cancelled, reason: {$payments_result_data['failureReason']}.");
             } elseif($status_before_update == 'cancelled' && $payments_result_data["status"] == "success") {
-                $order->update_status('processing', 'Order is processing.');
+                if ($payments_result_data["payeeId"] == $this->payee_uuid
+                    && $payments_result_data["quoteAssetId"] == $order_quote_assetid
+                    && $payments_result_data["quoteAmount"] == $order_quote_amount) {
+                    $order->update_status('processing', 'Order is processing.');
+                }
             }
 
             if (! $order->has_status(['pending', 'processing'])){
