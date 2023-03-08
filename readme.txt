@@ -90,4 +90,4 @@ If you run into any problems, or if you simply wish to discuss something with ou
 = 1.0.4 =
 * Remove expiredTimestamp
 = 1.0.5 =
-* Change Icon
+* Change Icon & Remove currency check
