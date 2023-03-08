@@ -282,7 +282,7 @@ function wc_mixpay_gateway_init()
                 return '';
             }
 
-            $url = WC_HTTPS::force_https_url(plugins_url( '/assets/payemt_button.png', __FILE__ ));
+            $url = WC_HTTPS::force_https_url(plugins_url( '/assets/images/payemt_button.png', __FILE__ ));
             $icon_html .= '<img width="300" src="' . esc_attr( $url ) . '" alt="mixpay" />';
             return apply_filters( 'woocommerce_gateway_icon', $icon_html, $this->id );
         }
