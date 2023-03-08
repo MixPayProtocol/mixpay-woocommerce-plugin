@@ -192,8 +192,6 @@ function wc_mixpay_gateway_init()
             $this->log = new WC_Logger();
 
             // Actions
-            add_filter('woocommerce_available_payment_gateways', [$this, 'chenk_is_valid_for_use'], 1, 1);
-            add_action('woocommerce_page_wc-settings', [$this, 'is_valid_for_use'], 1);
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
             add_action('woocommerce_thankyou_' . $this->id, [ $this, 'thankyou_page' ] );
             add_action('woocommerce_api_wc_gateway_mixpay', [$this, 'mixpay_callback']);
@@ -392,34 +390,6 @@ function wc_mixpay_gateway_init()
             $mixpay_args = apply_filters('woocommerce_mixpay_args', $mixpay_args);
 
             return $mixpay_args;
-        }
-
-        function chenk_is_valid_for_use($_available_gateways)
-        {
-            if(! $this->is_valid_for_use()){
-                unset($_available_gateways[$this->id]);
-            }
-            return $_available_gateways;
-        }
-
-        /**
-         * Check if this gateway is enabled and available in the user's country
-         *
-         * @access public
-         * @return bool
-         */
-        function is_valid_for_use()
-        {
-            $asset_lists = $this->get_quote_asset_lists();
-            $currency    = get_woocommerce_currency();
-
-            if(! in_array(strtolower($currency), $asset_lists)){
-                $this->enabled = false;
-
-                return false;
-            }
-
-            return true;
         }
 
         /**
@@ -683,6 +653,10 @@ function wc_mixpay_gateway_init()
 
             if ($result['success']) {
                 return $result['data']['code'];
+            } else {
+                if ($result['code'] != 0) {
+                    throw new Exception($result['message']);
+                }
             }
 
             return null;
