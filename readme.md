@@ -2,11 +2,11 @@
 Contributors: MixPay Payment
 Tags: bitcoin, litecoin, payments, mixpay, cryptocurrency, payment gateway  
 Requires at least:       5.5  
-Tested up to:            6.4
+Tested up to:            6.3  
 Requires PHP:            7.1+
 WC requires at least:    4.9.4  
-WC tested up to:         8.6
-Stable tag:              1.1.0
+WC tested up to:         8.1.1  
+Stable tag:              1.1.1
 License:                 GPLv2 or later
 
 ## Description
@@ -70,7 +70,7 @@ If you run into any problems, or if you simply wish to discuss something with ou
 
 **Documents**
 
-* For users: https://mixpay.me
+* For users: https://help.mixpay.me
 * For developers: https://mixpay.me/developers
 
 **Social**
@@ -106,5 +106,5 @@ If you run into any problems, or if you simply wish to discuss something with ou
 * Change images catalogue
 ### 1.0.9
 * Use MixPay Email Account
-### 1.1.0
-* Support for woocommerce block.
+### 1.0.10
+* Test with latest version of wordpress
