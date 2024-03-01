@@ -5,18 +5,18 @@ import { decodeEntities } from '@wordpress/html-entities';
 import { getSetting } from '@woocommerce/settings';
 
 const settings = getSetting( 'mixpay_gateway_data', {} );
-
+const title = settings.title || 'MixPay Payment';
 const defaultLabel = __(
-	settings.title,
+	title,
 	'mpwc'
 );
 
-const label = decodeEntities( settings.title ) || defaultLabel;
+const label = decodeEntities( title ) || defaultLabel;
 /**
  * Content component
  */
 const Content = () => {
-	return decodeEntities( settings.description || 'Pay with BTC, ETH, LTC and many more' );
+	return decodeEntities( settings.description || 'Expand your payment options with MixPay! BTC, ETH, LTC and many more: pay with anything you like!' );
 };
 /**
  * Label component

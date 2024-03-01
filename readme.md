@@ -6,7 +6,7 @@ Tested up to:            6.3
 Requires PHP:            7.1+
 WC requires at least:    4.9.4  
 WC tested up to:         8.1.1  
-Stable tag:              1.1.1
+Stable tag:              1.1.2
 License:                 GPLv2 or later
 
 ## Description
