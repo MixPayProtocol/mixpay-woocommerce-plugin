@@ -3,11 +3,11 @@
 Contributors: MixPay Payment
 Tags: crypto, payment, payment gateway, mixpay, bitcoin, litecoin
 Requires at least:       5.5
-Tested up to:            6.4
+Tested up to:            6.6
 Requires PHP:            7.1+
 WC requires at least:    4.9.4
-WC tested up to:         8.6
-Stable tag:              1.1.2
+WC tested up to:         9.3
+Stable tag:              1.1.5
 License:                 GPLv2 or later
 License URI:             http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -52,7 +52,7 @@ The easiest way to accept online payments in a wide variety of cryptocurrencies.
 
 = Plugin installation =
 
-1. Please make sure [BCMath](https://www.php.net/manual/en/book.bc.php) installed in your system.
+1. Please make sure [PHP BCMath](https://www.php.net/manual/en/book.bc.php) installed in your server.
 2. Upload the mixpay-woocommerce-plugin directory to the /wp-content/plugins/directory.
 3. Activate the plugin through the “Plugins” menu in WordPress.
 
@@ -98,3 +98,5 @@ If you run into any problems, or if you simply wish to discuss something with ou
 * Use MixPay Email Account
 ### 1.1.0
 * Support for woocommerce block.
+### 1.0.11~13
+* Minor fixed, showing payment icon etc...

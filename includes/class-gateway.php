@@ -67,7 +67,7 @@ class MPWC_Gateway extends WC_Payment_Gateway {
             'payee_uuid' => [
                 'title'             => esc_html(__('Payee Uuid ', 'wc-mixpay-gateway')),
                 'type'              => 'text',
-                'description'       => esc_html(__('This controls the assets payee uuid.', 'wc-mixpay-gateway')),
+                'description'       => esc_html(__('This controls the payee uuid, you can create from https://dashboard.mixpay.me/.', 'wc-mixpay-gateway')),
             ],
             'settlement_asset_id' => [
                 'title'       => esc_html(__('Settlement Asset ', 'wc-mixpay-gateway')),
@@ -134,7 +134,7 @@ class MPWC_Gateway extends WC_Payment_Gateway {
             return '';
         }
 
-        $url = WC_HTTPS::force_https_url(plugins_url('/assets/images/payemt_button.png', __FILE__));
+        $url = WC_HTTPS::force_https_url(plugins_url('../assets/images/payemt_button.png', __FILE__));
         $icon_html .= '<img width="300" src="' . esc_attr($url) . '" alt="mixpay" />';
 
         return apply_filters('woocommerce_gateway_icon', $icon_html, $this->id);
@@ -223,7 +223,7 @@ class MPWC_Gateway extends WC_Payment_Gateway {
     {
         ?>
         <h3><?php _e('MixPay Payment', 'woocommerce'); ?></h3>
-        <p><?php _e('Completes checkout via MixPay Payment', 'woocommerce'); ?></p>
+        <p><?php _e('Completes checkout via MixPay Payment. If you encounter any problems, feel free to contact bd@mixpay.me.', 'woocommerce'); ?></p>
 
         <?php if ($this->enabled) { ?>
 
