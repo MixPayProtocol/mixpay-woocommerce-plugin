@@ -1,13 +1,13 @@
 === MixPay Crypto Payment Gateway for WooCommerce ===
 
-Contributors: MixPay
+Contributors: mixpay
 Tags: crypto, payment, payment gateway, mixpay, bitcoin
 Requires at least:       5.5
 Tested up to:            6.6
 Requires PHP:            7.2.24+
 WC requires at least:    4.9.4
 WC tested up to:         9.3
-Stable tag:              1.1.6
+Stable tag:              1.1.9
 License:                 GPLv2 or later
 License URI:             http://www.gnu.org/licenses/gpl-2.0.html
 

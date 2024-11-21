@@ -1,5 +1,5 @@
 # MixPay Crypto Payment Gateway for WooCommerce
-Contributors: MixPay
+Contributors: mixpay
 Tags: bitcoin, litecoin, payments, mixpay, cryptocurrency, payment gateway  
 Requires at least:       5.5  
 Tested up to:            6.6
