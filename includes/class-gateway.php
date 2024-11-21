@@ -59,11 +59,11 @@ class MPWC_Gateway extends WC_Payment_Gateway {
                 'description' => esc_html(__('This controls the description which the user sees during checkout.', 'wc-mixpay-gateway')),
                 'default'     => esc_html(__('Expand your payment options with MixPay! BTC, ETH, LTC and many more: pay with anything you like!', 'wc-mixpay-gateway')),
             ],
-            'mixin_id' => [
-                'title'       => esc_html(__('Mixin Id ', 'wc-mixpay-gateway')),
-                'type'        => 'text',
-                'description' => __('(<strong style="color: red">Before setting the Mixin Id, the MixPay robot 7000104220 must be added to the Mixin wallet as a contact</strong>) This controls the mixin id or multisig group (minxinid_1|minxinid_2|minxinid_3|threshold)', 'wc-mixpay-gateway'),
-            ],
+            // 'mixin_id' => [
+            //     'title'       => esc_html(__('Mixin Id ', 'wc-mixpay-gateway')),
+            //     'type'        => 'text',
+            //     'description' => __('(<strong style="color: red">Before setting the Mixin Id, the MixPay robot 7000104220 must be added to the Mixin wallet as a contact</strong>) This controls the mixin id or multisig group (minxinid_1|minxinid_2|minxinid_3|threshold)', 'wc-mixpay-gateway'),
+            // ],
             'payee_uuid' => [
                 'title'             => esc_html(__('Payee Uuid ', 'wc-mixpay-gateway')),
                 'type'              => 'text',
@@ -207,6 +207,7 @@ class MPWC_Gateway extends WC_Payment_Gateway {
             'callbackUrl'       => site_url() . '/?wc-api=wc_gateway_mixpay',
             'isTemp'            => true,
             'cancelUrl'         => $order->get_cancel_order_url_raw(),
+            'from'              => 'wp-woocommerce',
         ];
 
         $mixpay_args = apply_filters('woocommerce_mixpay_args', $mixpay_args);
