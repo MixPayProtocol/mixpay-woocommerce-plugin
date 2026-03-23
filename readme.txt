@@ -7,11 +7,21 @@ Tested up to:            6.6
 Requires PHP:            7.2.24+
 WC requires at least:    4.9.4
 WC tested up to:         9.3
-Stable tag:              1.1.9
+Stable tag:              1.1.11
 License:                 GPLv2 or later
 License URI:             http://www.gnu.org/licenses/gpl-2.0.html
 
 MixPay Payment is a service that allows users to with numerous supported cryptocurrencies
+
+== Changelog ==
+
+= 1.1.11 - 2025-11-21 =
+* Improved order status mapping with WooCommerce standards
+* Enhanced payment validation and error logging
+* Fixed order status overwrite issues
+
+= 1.1.10 =
+* Previous stable version
 
 == Description ==
 MixPay for WordPress - The Ultimate Crypto Payment Solution for Merchants

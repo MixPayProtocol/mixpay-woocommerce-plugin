@@ -6,13 +6,23 @@ Tested up to:            6.6
 Requires PHP:            7.2.24+
 WC requires at least:    4.9.4  
 WC tested up to:         9.3
-Stable tag:              1.1.4
+Stable tag:              1.1.11
 License:                 GPLv2 or later
 
 
 MixPay Payment is a service that allows users to with numerous supported cryptocurrencies
 
-== Description ==
+## Changelog
+
+### 1.1.11 - 2025-11-21
+* Improved order status mapping with WooCommerce standards
+* Enhanced payment validation and error logging
+* Fixed order status overwrite issues
+
+### 1.1.10
+* Previous stable version
+
+## Description
 MixPay for WordPress - The Ultimate Crypto Payment Solution for Merchants
 
 [MixPay](https://mixpay.me) is a Web3-based payment protocol that brings a secure, privacy-focused crypto payment solution to your WordPress store. Say goodbye to costly fees and complex integrations, and start accepting a wide range of cryptocurrencies with ease.

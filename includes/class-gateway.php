@@ -33,6 +33,48 @@ class MPWC_Gateway extends WC_Payment_Gateway {
 
         // Customer Emails
         add_action('woocommerce_email_before_order_table', [$this, 'email_instructions'], 10, 3);
+        
+        // Currency switching compatibility
+        add_action('wp_ajax_yaycurrency_switch_currency', [$this, 'handle_currency_switch'], 5);
+        add_action('wp_ajax_nopriv_yaycurrency_switch_currency', [$this, 'handle_currency_switch'], 5);
+        add_action('init', [$this, 'maybe_handle_currency_switch']);
+        
+        // Ensure gateway availability after currency changes
+        add_filter('woocommerce_available_payment_gateways', [$this, 'ensure_gateway_availability'], 999);
+    }
+
+    /**
+     * Check if the gateway is available for use
+     * This ensures the gateway remains visible after currency switching
+     */
+    public function is_available() {
+
+        // First check parent availability (enabled, etc.)
+        if (!parent::is_available()) {
+            return false;
+        }
+
+        // Check if required settings are configured
+        if (empty($this->payee_uuid)) {
+            return false;
+        }
+
+        $quote_asset_lists = $this->get_quote_asset_lists($this->payee_uuid);
+        if (empty($quote_asset_lists)) {
+            return false;
+        }
+
+        $currency = strtolower(get_woocommerce_currency());
+        
+        // Check if current currency is supported
+        // $quote_asset_lists contains assetId array (currency codes + UUIDs)
+        if (!in_array($currency, $quote_asset_lists)) {
+            return false;
+        }
+
+        // MixPay supports multiple currencies through API conversion
+        // Always allow the gateway regardless of current currency
+        return true;
     }
 
     /**
@@ -276,31 +318,59 @@ class MPWC_Gateway extends WC_Payment_Gateway {
 
         $status_before_update = $order->get_status();
 
-        if ($payments_result_data['status'] == 'pending' && $status_before_update == 'pending') {
-            $order->update_status('processing', 'Order is processing.');
-        } elseif ($payments_result_data['status'] == 'success' && in_array($status_before_update, ['pending', 'processing'])) {
+        $mixpay_status = $payments_result_data['status'] ?? '';
+
+        // MixPay unpaid: Keep WooCommerce pending status, no status change
+        if ($mixpay_status === 'unpaid') {
+            // Add order note without changing status
+            $order->add_order_note('Payment is still unpaid on MixPay.');
+
+        // MixPay pending/auditing: Payment initiated but not confirmed, map to Woo on-hold (only from pending)
+        } elseif (in_array($mixpay_status, ['pending', 'auditing'], true)) {
+            if ($status_before_update === 'pending') {
+                $order->update_status('on-hold', 'Payment is pending confirmation on MixPay.');
+            }
+
+        // MixPay success: Payment confirmed, map to Woo processing (validate amount and currency first)
+        } elseif ($mixpay_status === 'success') {
             $order_quote_amount  = number_format($order->get_total(), 8, '.', '');
             $order_quote_assetid = strtolower($order->get_currency());
 
             if ($payments_result_data['payeeId'] == $this->payee_uuid
                 && $payments_result_data['quoteAssetId'] == $order_quote_assetid
                 && $payments_result_data['quoteAmount'] == $order_quote_amount) {
-                $order->update_status('completed', 'Order has been paid.');
+                // Only update to processing if order is pending/on-hold, avoid overwriting completed orders
+                if (in_array($status_before_update, ['pending', 'on-hold'], true)) {
+                    $order->update_status('processing', 'Order has been paid.');
+                    $result = ['code' => 'SUCCESS', 'status' => 200];
+                }
             } else {
-                $order->update_status('failed', 'Order has been failed, reason: Payment Info Is Error.');
+                // Log detailed validation failure information
+                $error_details = sprintf(
+                    'Payment validation failed. Expected: payeeId=%s, quoteAssetId=%s, quoteAmount=%s. Received: payeeId=%s, quoteAssetId=%s, quoteAmount=%s',
+                    $this->payee_uuid,
+                    $order_quote_assetid,
+                    $order_quote_amount,
+                    $payments_result_data['payeeId'] ?? 'N/A',
+                    $payments_result_data['quoteAssetId'] ?? 'N/A',
+                    $payments_result_data['quoteAmount'] ?? 'N/A'
+                );
+                $order->update_status('failed', $error_details);
             }
-            $result = ['code' => 'SUCCESS', 'status' => 200];
-        } elseif ($payments_result_data['status'] == 'failed') {
-            $order->update_status('cancelled', "Order has been cancelled, reason: {$payments_result_data['failureReason']}.");
-        } elseif ($status_before_update == 'cancelled' && $payments_result_data['status'] == 'success') {
-            if ($payments_result_data['payeeId'] == $this->payee_uuid
-                && $payments_result_data['quoteAssetId'] == $order_quote_assetid
-                && $payments_result_data['quoteAmount'] == $order_quote_amount) {
-                $order->update_status('processing', 'Order is processing.');
-            }
-        }
 
-        if (! $order->has_status(['pending', 'processing'])) {
+        // MixPay failed: Payment failed, map to Woo failed
+        } elseif ($mixpay_status === 'failed') {
+            $failure_reason = $payments_result_data['failureReason'] ?? 'Unknown reason';
+            $order->update_status('failed', "Payment failed: {$failure_reason}");
+
+        // Unknown status: Log but do not change order status
+        } else {
+            if (!empty($mixpay_status)) {
+                $order->add_order_note("Unknown MixPay status received: {$mixpay_status}");
+            }
+        } 
+
+        if (! $order->has_status(['pending', 'processing', 'on-hold'])) {
             wp_clear_scheduled_hook('check_payments_result_cron_hook', [$order_id]);
         }
 
@@ -324,7 +394,7 @@ class MPWC_Gateway extends WC_Payment_Gateway {
         return json_decode($payments_result_data, true)['data'];
     }
 
-    public function get_quote_asset_lists()
+    public function get_quote_asset_lists($payee_uuid)
     {
         $key               = 'mixpay_quote_asset_lists';
         $quote_asset_lists = get_option($key);
@@ -333,7 +403,7 @@ class MPWC_Gateway extends WC_Payment_Gateway {
             return $quote_asset_lists['data'];
         }
 
-        $response      = wp_remote_get(MIXPAY_QUOTE_ASSETS_API);
+        $response      = wp_remote_get(MIXPAY_QUOTE_ASSETS_API . "?payeeId={$payee_uuid}");
         $response_data = wp_remote_retrieve_body($response);
         $response_data = json_decode($response_data, true)['data'] ?? [];
         $lists         = array_column($response_data, 'assetId');
@@ -495,6 +565,37 @@ class MPWC_Gateway extends WC_Payment_Gateway {
             ];
             wp_remote_post($this->debug, ['body' => $data]);
         }
+    }
+
+    /**
+     * Handle YayCurrency currency switch via AJAX
+     */
+    public function handle_currency_switch() {
+        // Clear any cached gateway availability
+        wp_cache_delete('woocommerce_available_payment_gateways', 'woocommerce');
+    }
+
+    /**
+     * Handle currency switch via URL parameter or session
+     */
+    public function maybe_handle_currency_switch() {
+        // Check if currency was switched via URL parameter or session
+        if (isset($_GET['currency']) || (function_exists('WC') && WC()->session && WC()->session->get('yaycurrency_current_currency'))) {
+            // Clear cached payment gateways
+            wp_cache_delete('woocommerce_available_payment_gateways', 'woocommerce');
+        }
+    }
+
+    /**
+     * Ensure MixPay gateway remains available after currency changes
+     */
+    public function ensure_gateway_availability($available_gateways) {
+        // If MixPay is not in available gateways but should be, add it back
+        if (!isset($available_gateways[$this->id]) && $this->is_available()) {
+            $available_gateways[$this->id] = $this;
+        }
+        
+        return $available_gateways;
     }
 
 }
